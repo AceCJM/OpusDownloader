@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opusdownloader"
+version = "0.1.0"
+description = "A tool to download YouTube videos as Opus audio with embedded thumbnails."
+authors = [{name = "AceCJM", email = "sgithi.sgigigtat@gmail.com"}]
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "certifi==2026.1.4",
+    "charset-normalizer==3.4.4",
+    "idna==3.11",
+    "mutagen==1.47.0",
+    "pillow==12.1.1",
+    "pytube==15.0.0",
+    "requests==2.32.5",
+    "urllib3==2.6.3",
+    "yt-dlp==2026.2.21",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+opusdownloader = "opusdownloader:cli"
