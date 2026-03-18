@@ -12,18 +12,18 @@ def grab_thumb(url: str, output) -> str:
     url = f"http://img.youtube.com/vi/{videoId}/maxresdefault.jpg"
     response = requests.get(url)
     if response.status_code == 200:
-        thumbnailFileName = f"{output}{videoId}_thumb.jpg"
-        with open(thumbnailFileName, "wb") as f:
+        image_file_path = f"{output}{videoId}_thumb.jpg"
+        with open(image_file_path, "wb") as f:
             f.write(response.content)
         print("Thumbnail downloaded")
-        return thumbnailFileName
+        return image_file_path
     else:
         print("Failed to download thumbnail")
         return -1
 
-def crop_thumb(filepath):
-    img = Image.open(filepath)
-    width, height = img.size
+def crop_thumb(image_file_path):
+    image_file = Image.open(image_file_path)
+    width, height = image_file.size
     # Assuming width > height, crop to square
     if width > height:
         left = (width - height) // 2
@@ -36,9 +36,9 @@ def crop_thumb(filepath):
         left = 0
         bottom = top + width
         right = width
-    cropped_img = img.crop((left, top, right, bottom))
-    cropped_img.save(filepath)
-    print(f"Cropped thumbnail to square: {filepath}")
+    cropped_img = image_file.crop((left, top, right, bottom))
+    cropped_img.save(image_file_path)
+    print(f"Cropped thumbnail to square: {image_file_path}")
 
 
 def download(url: str, output, format='best'):
@@ -59,7 +59,7 @@ def download(url: str, output, format='best'):
         info = ydl.extract_info(url, download=True)
         filename = ydl.prepare_filename(info)
         print(f"Downloaded: {filename}")
-        return f"{filename}.opus", info
+        return f"{filename}.{format}", info
 
 def embed_image_in_file(audio_file_path, image_file_path, info):
     try:
@@ -72,14 +72,14 @@ def embed_image_in_file(audio_file_path, image_file_path, info):
 
         encoded_picture = base64.b64encode(cover_art.write()).decode('ascii')
 
-        audio = OggOpus(audio_file_path)
-        audio['metadata_block_picture'] = encoded_picture
-        audio['title'] = info.get('title', '')
-        audio['artist'] = info.get('uploader', '')
-        audio['album'] = info.get('album', '')
-        audio['date'] = str(info.get('upload_date', ''))
-        audio['description'] = info.get('description', '')
-        audio.save()
+        audio_file = OggOpus(audio_file_path)
+        audio_file['metadata_block_picture'] = encoded_picture
+        audio_file['title'] = info.get('title', '')
+        audio_file['artist'] = info.get('uploader', '')
+        audio_file['album'] = info.get('album', '')
+        audio_file['date'] = str(info.get('upload_date', ''))
+        audio_file['description'] = info.get('description', '')
+        audio_file.save()
         
         print(f"Successfully embedded metadata and image into {audio_file_path}")
 
@@ -95,13 +95,13 @@ def get_video_id(url):
     else: return None
 
 def main(url, output="./", format='best'):
-    filename, info = download(url, output, format)
-    thumbFilename = grab_thumb(url, output)
-    crop_thumb(thumbFilename)
-    embed_image_in_file(filename, thumbFilename, info)
-    if os.path.exists(thumbFilename):
-        os.remove(thumbFilename)
-        print(f"Deleted thumbnail file {thumbFilename}")
+    audio_file_path, info = download(url, output, format)
+    image_file_path = grab_thumb(url, output)
+    crop_thumb(image_file_path)
+    embed_image_in_file(audio_file_path, image_file_path, info)
+    if os.path.exists(image_file_path):
+        os.remove(image_file_path)
+        print(f"Deleted thumbnail file {image_file_path}")
 
 def cli():
     parser = argparse.ArgumentParser(description="Download YouTube videos as Opus audio with embedded thumbnails.")
