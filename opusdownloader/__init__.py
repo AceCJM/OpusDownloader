@@ -92,11 +92,11 @@ def embed_image_in_file(audio_file_path, image_file_path, info):
                     data=image_data,
                 ),
                 # Add metadata tags
-                ID3.TIT2(encoding=3, text=info.get("title", "")),
-                ID3.TPE1(encoding=3, text=info.get("uploader", "")),
-                ID3.TALB(encoding=3, text=info.get("album", "")),
-                ID3.TDRC(encoding=3, text=str(info.get("upload_date", ""))),
-                ID3.COMM(encoding=3, lang="eng", desc="Description", text=info.get("description", ""))
+                TIT2(encoding=3, text=info.get("title", "")),
+                TPE1(encoding=3, text=info.get("uploader", "")),
+                TALB(encoding=3, text=info.get("album", "")),
+                TDRC(encoding=3, text=str(info.get("upload_date", ""))),
+                COMM(encoding=3, lang="eng", desc="Description", text=info.get("description", ""))
             )
             audio_file.save()
 
