@@ -10,6 +10,7 @@ import argparse
 
 EasyID3.RegisterTextKey("description", "COMM")
 
+
 def grab_thumb(url: str, output) -> str:
     videoId = get_video_id(url)
     url = f"http://img.youtube.com/vi/{videoId}/maxresdefault.jpg"
@@ -64,10 +65,11 @@ def download(url: str, output, format="best"):
         info = ydl.extract_info(url, download=True)
         filename = ydl.prepare_filename(info)
         print(f"Downloaded: {filename}")
-        return f"{filename}.{format}", info
+        return f"{filename}.{format if format != 'best' else 'opus'}", info
 
 
 def embed_image_in_file(audio_file_path, image_file_path, info):
+    print(f"\n\n\nEmbedding metadata and image into {audio_file_path}\n\n\n")
     try:
         with open(image_file_path, "rb") as f:
             image_data = f.read()
@@ -86,10 +88,14 @@ def embed_image_in_file(audio_file_path, image_file_path, info):
             audio_file["date"] = str(info.get("upload_date", ""))
             audio_file["description"] = info.get("description", "")
             audio_file.save()
-            
+
             # Use ID3 for picture
             id3 = ID3(audio_file_path)
-            id3.add(APIC(encoding=3, mime='image/jpeg', type=3, desc='Cover', data=image_data))
+            id3.add(
+                APIC(
+                    encoding=3, mime="image/jpeg", type=3, desc="Cover", data=image_data
+                )
+            )
             id3.save()
         elif audio_file_path.endswith(".opus"):
             audio_file = OggOpus(audio_file_path)
