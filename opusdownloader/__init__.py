@@ -8,6 +8,7 @@ from pytube import Playlist
 from PIL import Image
 import argparse
 
+EasyID3.RegisterTextKey("description", "COMM")
 
 def grab_thumb(url: str, output) -> str:
     videoId = get_video_id(url)
@@ -83,7 +84,7 @@ def embed_image_in_file(audio_file_path, image_file_path, info):
             audio_file["artist"] = info.get("uploader", "")
             audio_file["album"] = info.get("album", "")
             audio_file["date"] = str(info.get("upload_date", ""))
-            audio_file["comment"] = info.get("description", "")
+            audio_file["description"] = info.get("description", "")
             audio_file.save()
             
             # Use ID3 for picture
