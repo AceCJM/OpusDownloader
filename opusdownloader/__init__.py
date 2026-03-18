@@ -41,7 +41,7 @@ def crop_thumb(filepath):
     print(f"Cropped thumbnail to square: {filepath}")
 
 
-def download_opus(url: str, output):
+def download(url: str, output, format='best'):
     ydl_opts = {
         "format": "bestaudio/best",
         'embed-metadata': True,
@@ -50,7 +50,7 @@ def download_opus(url: str, output):
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
-                "preferredcodec": "opus",
+                "preferredcodec": format,
                 "preferredquality": "0",  # 0 is best
             }
         ],
@@ -61,7 +61,7 @@ def download_opus(url: str, output):
         print(f"Downloaded: {filename}")
         return f"{filename}.opus", info
 
-def embed_image_in_opus(audio_file_path, image_file_path, info):
+def embed_image_in_file(audio_file_path, image_file_path, info):
     try:
         with open(image_file_path, 'rb') as f:
             image_data = f.read()
@@ -94,11 +94,11 @@ def get_video_id(url):
     if match: return match.group(1)
     else: return None
 
-def main(url, output="./"):
-    filename, info = download_opus(url, output)
+def main(url, output="./", format='best'):
+    filename, info = download(url, output, format)
     thumbFilename = grab_thumb(url, output)
     crop_thumb(thumbFilename)
-    embed_image_in_opus(filename, thumbFilename, info)
+    embed_image_in_file(filename, thumbFilename, info)
     if os.path.exists(thumbFilename):
         os.remove(thumbFilename)
         print(f"Deleted thumbnail file {thumbFilename}")
@@ -108,16 +108,23 @@ def cli():
     parser.add_argument('-s', '--single', type=str, help='Download a single video from URL')
     parser.add_argument('-p', '--playlist', type=str, help='Download all videos from playlist URL')
     parser.add_argument('-o', '--output', type=str, default='./', help='Output directory (default: ./)')
+    parser.add_argument('-f', '--format', type=str, default='best', help='Audio format (opus, flac, etc.) (default: best)')
+    parser.add_argument('-l', '--listFormats', action='store_true', help='List available audio formats and exit')
     
     args = parser.parse_args()
     
+    if args.listFormats:
+        print("Available audio formats:")
+        print("- best (default, auto-selects the best format)\n- aac\n- alac\n- flac\n- m4a\n- mp3\n- opus\n- vorbis\n- wav")
+        return
+
     if args.single:
-        main(args.single, args.output)
+        main(args.single, args.output, args.format)
     elif args.playlist:
         yt_play = Playlist(args.playlist)
         print(f"Downloading {len(yt_play.video_urls)} videos")
         for video in yt_play.videos:
-            main(video.watch_url, args.output)
+            main(video.watch_url, args.output, args.format)
     else:
         parser.print_help()
 
