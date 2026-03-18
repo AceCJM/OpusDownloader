@@ -49,6 +49,7 @@ def download(url: str, output, format="best"):
         "format": "bestaudio/best",
         "embed-metadata": True,
         "add-metadata": True,
+        "continuedl": False,
         "outtmpl": os.path.join(output, "%(title)s [%(id)s]"),
         "postprocessors": [
             {
@@ -82,7 +83,7 @@ def embed_image_in_file(audio_file_path, image_file_path, info):
             audio_file["artist"] = info.get("uploader", "")
             audio_file["album"] = info.get("album", "")
             audio_file["date"] = str(info.get("upload_date", ""))
-            audio_file["description"] = info.get("description", "")
+            audio_file["comment"] = info.get("description", "")
             audio_file.save()
             
             # Use ID3 for picture
