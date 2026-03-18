@@ -1,14 +1,13 @@
 import sys, requests, base64, os
 import yt_dlp, re
 from mutagen.oggopus import OggOpus
-from mutagen.easyid3 import EasyID3
-from mutagen.id3 import ID3, APIC
+from mutagen.mp3 import MP3
+from mutagen.id3 import ID3, APIC, error
 from mutagen.flac import Picture
 from pytube import Playlist
 from PIL import Image
 import argparse
 
-EasyID3.RegisterTextKey("description", "COMM")
 
 def grab_thumb(url: str, output) -> str:
     videoId = get_video_id(url)
@@ -78,19 +77,31 @@ def embed_image_in_file(audio_file_path, image_file_path, info):
 
         encoded_picture = base64.b64encode(cover_art.write()).decode("ascii")
         if audio_file_path.endswith(".mp3"):
-            # Use EasyID3 for text metadata
-            audio_file = EasyID3(audio_file_path)
-            audio_file["title"] = info.get("title", "")
-            audio_file["artist"] = info.get("uploader", "")
-            audio_file["album"] = info.get("album", "")
-            audio_file["date"] = str(info.get("upload_date", ""))
-            audio_file["description"] = info.get("description", "")
+            # Embed image into MP3 file using mutagen
+            audio_file = MP3(audio_file_path, ID3=ID3)
+            try:
+                audio_file.add_tags()
+            except error:
+                pass
+            audio_file.tags.add(
+                APIC(
+                    encoding=3,
+                    mime="image/jpeg",
+                    type=3,
+                    desc="Cover",
+                    data=image_data,
+                ),
+                # Add metadata tags
+                ID3.TIT2(encoding=3, text=info.get("title", "")),
+                ID3.TPE1(encoding=3, text=info.get("uploader", "")),
+                ID3.TALB(encoding=3, text=info.get("album", "")),
+                ID3.TDRC(encoding=3, text=str(info.get("upload_date", ""))),
+                ID3.COMM(encoding=3, lang="eng", desc="Description", text=info.get("description", ""))
+            )
             audio_file.save()
+
+
             
-            # Use ID3 for picture
-            id3 = ID3(audio_file_path)
-            id3.add(APIC(encoding=3, mime='image/jpeg', type=3, desc='Cover', data=image_data))
-            id3.save()
         elif audio_file_path.endswith(".opus"):
             audio_file = OggOpus(audio_file_path)
             audio_file["metadata_block_picture"] = encoded_picture
