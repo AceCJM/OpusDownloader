@@ -2,7 +2,7 @@ import sys, requests, base64, os
 import yt_dlp, re
 from mutagen.oggopus import OggOpus
 from mutagen.mp3 import MP3
-from mutagen.id3 import ID3, APIC, error
+from mutagen.id3 import ID3, APIC, TIT2, TPE1, TALB, TDRC, COMM, error
 from mutagen.flac import Picture
 from pytube import Playlist
 from PIL import Image
