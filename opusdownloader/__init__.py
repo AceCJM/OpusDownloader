@@ -2,6 +2,7 @@ import sys, requests, base64, os
 import yt_dlp, re
 from mutagen.oggopus import OggOpus
 from mutagen.easyid3 import EasyID3
+from mutagen.id3 import ID3, APIC
 from mutagen.flac import Picture
 from pytube import Playlist
 from PIL import Image
@@ -75,14 +76,19 @@ def embed_image_in_file(audio_file_path, image_file_path, info):
 
         encoded_picture = base64.b64encode(cover_art.write()).decode("ascii")
         if audio_file_path.endswith(".mp3"):
+            # Use EasyID3 for text metadata
             audio_file = EasyID3(audio_file_path)
-            audio_file["APIC"] = encoded_picture
             audio_file["title"] = info.get("title", "")
             audio_file["artist"] = info.get("uploader", "")
             audio_file["album"] = info.get("album", "")
             audio_file["date"] = str(info.get("upload_date", ""))
             audio_file["description"] = info.get("description", "")
             audio_file.save()
+            
+            # Use ID3 for picture
+            id3 = ID3(audio_file_path)
+            id3.add(APIC(encoding=3, mime='image/jpeg', type=3, desc='Cover', data=image_data))
+            id3.save()
         elif audio_file_path.endswith(".opus"):
             audio_file = OggOpus(audio_file_path)
             audio_file["metadata_block_picture"] = encoded_picture
