@@ -69,7 +69,6 @@ def download(url: str, output, format="best"):
 
 
 def embed_image_in_file(audio_file_path, image_file_path, info):
-    print(f"\n\n\nEmbedding metadata and image into {audio_file_path}\n\n\n")
     try:
         with open(image_file_path, "rb") as f:
             image_data = f.read()
