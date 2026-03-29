@@ -1,13 +1,14 @@
-# OpusDownloader
+# sgithidownloader
 
-A Python tool to download YouTube videos as high-quality Opus audio files with embedded thumbnails and metadata.
+A Python tool to download YouTube videos and audio in various high-quality formats with embedded thumbnails and metadata.
 
 ## Features
 
 - Download individual YouTube videos or entire playlists
-- Convert audio to Opus format (lossless quality)
+- Support for multiple video formats (MP4, WebM, etc.)
+- Convert and download audio in various formats (Opus, MP3, FLAC, AAC, etc.)
 - Automatically embed video thumbnails as album art
-- Include metadata (title, artist, album, date, description)
+- Include metadata (title, artist, album, date, description) in supported formats
 - Crop thumbnails to square format for better display
 
 ## Installation
@@ -51,13 +52,19 @@ pip install -e .
 ### Download a Single Video
 
 ```bash
-opusdownloader -s "https://www.youtube.com/watch?v=VIDEO_ID" -o /path/to/output/
+sgithidownloader -s "https://www.youtube.com/watch?v=VIDEO_ID" -o /path/to/output/
 ```
 
 ### Download a Playlist
 
 ```bash
-opusdownloader -p "https://www.youtube.com/playlist?list=PLAYLIST_ID" -o /path/to/output/
+sgithidownloader -p "https://www.youtube.com/playlist?list=PLAYLIST_ID" -o /path/to/output/
+```
+
+### Download Audio
+
+```bash
+sgithidownloader -s "https://www.youtube.com/watch?v=VIDEO_ID" -f audio -af opus -o /path/to/output/
 ```
 
 ### Options
@@ -65,16 +72,25 @@ opusdownloader -p "https://www.youtube.com/playlist?list=PLAYLIST_ID" -o /path/t
 - `-s, --single URL`: Download a single video
 - `-p, --playlist URL`: Download all videos in a playlist
 - `-o, --output DIR`: Output directory (default: current directory)
+- `-f, --format FORMAT`: File format for video (mp4, webm, audio, etc.) (default: mp4)
+- `-af, --audio_format FORMAT`: Audio format (best, aac, alac, flac, m4a, mp3, opus, vorbis, wav) (default: best)
+- `-l, --listFormats`: List available audio formats and exit
 - `--help`: Show help message
 
 ## Examples
 
 ```bash
 # Download a single video to the current directory
-opusdownloader -s "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+sgithidownloader -s "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
 
 # Download a playlist to a specific folder
-opusdownloader -p "https://www.youtube.com/playlist?list=PLrAXtmRdnEQy4qtr5G1G8jQGzq9j9j9j" -o ~/Music/
+sgithidownloader -p "https://www.youtube.com/playlist?list=PLrAXtmRdnEQy4qtr5G1G8jQGzq9j9j9j" -o ~/Videos/
+
+# Download audio in MP3 format
+sgithidownloader -s "https://www.youtube.com/watch?v=dQw4w9WgXcQ" -f audio -af mp3 -o ~/Music/
+
+# List available audio formats
+sgithidownloader -l
 ```
 
 ## Dependencies

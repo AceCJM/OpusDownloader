@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "opusdownloader"
-version = "0.1.0"
-description = "A tool to download YouTube videos as Opus audio with embedded thumbnails."
+name = "SgithiDownloader"
+version = "1.0.0"
+description = "A tool to download YouTube videos and audio with embedded thumbnails."
 authors = [{name = "AceCJM", email = "sgithi.sgigigtat@gmail.com"}]
 readme = "README.md"
 requires-python = ">=3.8"
@@ -27,4 +27,4 @@ classifiers = [
 ]
 
 [project.scripts]
-opusdownloader = "opusdownloader:cli"
+sgithidownloader = "sgithidownloader:cli"

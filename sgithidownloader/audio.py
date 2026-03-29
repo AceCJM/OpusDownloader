@@ -1,32 +1,17 @@
-import sys, requests, base64, os
+import requests, base64, os
 import yt_dlp, re
 from mutagen.oggopus import OggOpus
 from mutagen.easyid3 import EasyID3
 from mutagen.id3 import ID3, APIC
 from mutagen.flac import Picture
-from pytube import Playlist
 from PIL import Image
-import argparse
+
+from sgithidownloader.shared import *
 
 EasyID3.RegisterTextKey("description", "COMM")
 
 
-def grab_thumb(url: str, output) -> str:
-    videoId = get_video_id(url)
-    url = f"http://img.youtube.com/vi/{videoId}/maxresdefault.jpg"
-    response = requests.get(url)
-    if response.status_code == 200:
-        image_file_path = f"{output}{videoId}_thumb.jpg"
-        with open(image_file_path, "wb") as f:
-            f.write(response.content)
-        print("Thumbnail downloaded")
-        return image_file_path
-    else:
-        print("Failed to download thumbnail")
-        return -1
-
-
-def crop_thumb(image_file_path):
+def crop_thumbnail_for_audio_file(image_file_path):
     image_file = Image.open(image_file_path)
     width, height = image_file.size
     # Assuming width > height, crop to square
@@ -46,7 +31,7 @@ def crop_thumb(image_file_path):
     print(f"Cropped thumbnail to square: {image_file_path}")
 
 
-def download(url: str, output, format="best"):
+def download_audio_file(url: str, output, format="best"):
     ydl_opts = {
         "format": "bestaudio/best",
         "embed-metadata": True,
@@ -68,7 +53,7 @@ def download(url: str, output, format="best"):
         return f"{filename}.{format if format != 'best' else 'opus'}", info
 
 
-def embed_image_in_file(audio_file_path, image_file_path, info):
+def embed_image_in_audio_file(audio_file_path, image_file_path, info):
     try:
         with open(image_file_path, "rb") as f:
             image_data = f.read()
@@ -120,73 +105,11 @@ def embed_image_in_file(audio_file_path, image_file_path, info):
     except Exception as e:
         print(f"An error occurred: {e}")
 
-
-def get_video_id(url):
-    youtube_regex = r"v=([^&]+)"
-    match = re.search(youtube_regex, url)
-    if match:
-        return match.group(1)
-    else:
-        return None
-
-
-def main(url, output="./", format="best"):
-    audio_file_path, info = download(url, output, format)
+def audio_main(url, output="./", format="best"):
+    audio_file_path, info = download_audio_file(url, output, format)
     image_file_path = grab_thumb(url, output)
-    crop_thumb(image_file_path)
-    embed_image_in_file(audio_file_path, image_file_path, info)
+    crop_thumbnail_for_audio_file(image_file_path)
+    embed_image_in_audio_file(audio_file_path, image_file_path, info)
     if os.path.exists(image_file_path):
         os.remove(image_file_path)
         print(f"Deleted thumbnail file {image_file_path}")
-
-
-def cli():
-    parser = argparse.ArgumentParser(
-        description="Download YouTube videos as Opus audio with embedded thumbnails."
-    )
-    parser.add_argument(
-        "-s", "--single", type=str, help="Download a single video from URL"
-    )
-    parser.add_argument(
-        "-p", "--playlist", type=str, help="Download all videos from playlist URL"
-    )
-    parser.add_argument(
-        "-o", "--output", type=str, default="./", help="Output directory (default: ./)"
-    )
-    parser.add_argument(
-        "-f",
-        "--format",
-        type=str,
-        default="best",
-        help="Audio format (opus, flac, etc.) (default: best)",
-    )
-    parser.add_argument(
-        "-l",
-        "--listFormats",
-        action="store_true",
-        help="List available audio formats and exit",
-    )
-
-    args = parser.parse_args()
-
-    if args.listFormats:
-        print("Available audio formats:")
-        print(
-            "- best (default, auto-selects the best format)\n- aac\n- alac\n- flac\n- m4a\n- mp3\n- opus\n- vorbis\n- wav",
-            "Metadata is only embedded in opus and mp3 formats due to mutagen limitations.",
-        )
-        return
-
-    if args.single:
-        main(args.single, args.output, args.format)
-    elif args.playlist:
-        yt_play = Playlist(args.playlist)
-        print(f"Downloading {len(yt_play.video_urls)} videos")
-        for video in yt_play.videos:
-            main(video.watch_url, args.output, args.format)
-    else:
-        parser.print_help()
-
-
-if __name__ == "__main__":
-    cli()
